@@ -9,6 +9,7 @@ from langchain_groq import ChatGroq
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.prompts import PromptTemplate
+import streamlit as st
 
 load_dotenv()
 
@@ -237,7 +238,7 @@ def build_chain():
         model="llama-3.1-8b-instant",
         temperature=0,
         max_tokens=600,
-        api_key=os.getenv("GROQ_API_KEY")
+        api_key = os.getenv("GROQ_API_KEY") or st.secrets.get("GROQ_API_KEY")
     )
 
     # Memory — keeps last 5 exchanges so follow-up questions work
@@ -267,4 +268,5 @@ def build_chain():
 
     # Return both chain AND retriever so the UI layer can do a retriever-based
     # relevance check before invoking the full chain (Issue 3 fix).
+
     return chain, retriever
