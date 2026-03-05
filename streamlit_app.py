@@ -124,8 +124,6 @@ if user_input:
                     answer = IRRELEVANT_RESPONSE
                 else:
                     raw_answer = _run_chain_with_retry(st.session_state.chain, user_input)
-                else:
-                    raw_answer = _run_chain_with_retry(st.session_state.chain, user_input)
                     if raw_answer is None:
                         answer = "⚠️ Something went wrong after multiple retries. Please try again in a moment."
                     else:
@@ -167,3 +165,4 @@ if user_input:
         "content": answer,
 
     })
+
