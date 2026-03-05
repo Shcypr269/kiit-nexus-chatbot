@@ -9,7 +9,6 @@ from langchain_groq import ChatGroq
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.prompts import PromptTemplate
-import streamlit as st
 
 load_dotenv()
 
@@ -214,8 +213,7 @@ def build_chain():
     # Load embeddings — same model used during ingestion
     embeddings = HuggingFaceEmbeddings(
         model_name="all-MiniLM-L6-v2",
-        model_kwargs={"device": "cpu"},
-        encode_kwargs={"normalize_embeddings": True}
+        model_kwargs={"device": "cpu"}
     )
 
     # Load ChromaDB from disk
@@ -229,8 +227,8 @@ def build_chain():
     retriever = vectorstore.as_retriever(
         search_type="mmr",
         search_kwargs={
-            "k": 8,
-            "fetch_k": 40
+            "k": 6,
+            "fetch_k": 20
         }
     )
 
@@ -238,8 +236,8 @@ def build_chain():
     llm = ChatGroq(
         model="llama-3.1-8b-instant",
         temperature=0,
-        max_tokens=800,
-        api_key = os.getenv("GROQ_API_KEY") or st.secrets.get("GROQ_API_KEY")
+        max_tokens=600,
+        api_key=os.getenv("GROQ_API_KEY")
     )
 
     # Memory — keeps last 5 exchanges so follow-up questions work
@@ -269,7 +267,4 @@ def build_chain():
 
     # Return both chain AND retriever so the UI layer can do a retriever-based
     # relevance check before invoking the full chain (Issue 3 fix).
-
     return chain, retriever
-
-
