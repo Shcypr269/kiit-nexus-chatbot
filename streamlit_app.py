@@ -113,9 +113,17 @@ if user_input:
             with st.spinner("Thinking..."):
                 # [FIX 3] Retriever-based relevance check: run retrieval first.
                 # If no documents come back the question is off-topic → fixed reply.
-                docs = st.session_state.retriever.invoke(user_input)
-                if not docs:
+                results = st.session_state.retriever.vectorstore.similarity_search_with_score(user_input, k=4)
+            if not results:
+                answer = IRRELEVANT_RESPONSE
+            else:
+                best_score = results[0][1]
+            
+                # allow most KIIT questions
+                if best_score > 1.4:
                     answer = IRRELEVANT_RESPONSE
+                else:
+                    raw_answer = _run_chain_with_retry(st.session_state.chain, user_input)
                 else:
                     raw_answer = _run_chain_with_retry(st.session_state.chain, user_input)
                     if raw_answer is None:
@@ -129,25 +137,33 @@ if user_input:
 
         # Case 4: Normal query
         else:
-            with st.spinner("Thinking..."):
-                # [FIX 3] Retriever-based relevance check: run retrieval first.
-                # If no documents come back the question is off-topic → fixed reply.
-                docs = st.session_state.retriever.invoke(user_input)
-                if not docs:
-                    answer = IRRELEVANT_RESPONSE
-                else:
-                    raw_answer = _run_chain_with_retry(st.session_state.chain, user_input)
-                    if raw_answer is None:
-                        answer = "⚠️ Something went wrong after multiple retries. Please try again in a moment."
-                    else:
-                        if not is_nexus_question(user_input):
-                            raw_answer = strip_nexus_link(raw_answer)
-                        answer = raw_answer
+           with st.spinner("Thinking..."):
 
-            st.write(answer)
+    results = st.session_state.retriever.vectorstore.similarity_search_with_score(user_input, k=4)
+
+    if not results:
+        answer = IRRELEVANT_RESPONSE
+
+    else:
+        best_score = results[0][1]
+
+        if best_score > 1.4:
+            answer = IRRELEVANT_RESPONSE
+
+        else:
+            raw_answer = _run_chain_with_retry(st.session_state.chain, user_input)
+
+            if raw_answer is None:
+                answer = "⚠️ Something went wrong after multiple retries. Please try again in a moment."
+            else:
+                if not is_nexus_question(user_input):
+                    raw_answer = strip_nexus_link(raw_answer)
+
+                answer = raw_answer
 
     # [FIX 2] Never store or display internal source filenames
     st.session_state.messages.append({
         "role": "assistant",
         "content": answer,
+
     })
