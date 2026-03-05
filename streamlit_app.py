@@ -1,6 +1,6 @@
 import time
 import streamlit as st
-from rag_chain import (build_chain,is_greeting,has_greeting_prefix,et_random_greeting,is_goodbye,is_nexus_question,strip_nexus_link,IRRELEVANT_RESPONSE)
+from rag_chain import (build_chain,is_greeting,has_greeting_prefix,get_random_greeting,is_goodbye,is_nexus_question,strip_nexus_link,IRRELEVANT_RESPONSE)
 
 def _run_chain_with_retry(chain, question: str, max_retries: int = 2):
     """
@@ -136,4 +136,5 @@ if user_input:
         "role": "assistant",
         "content": answer,
     })
+
 
