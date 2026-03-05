@@ -8,7 +8,6 @@ from rag_chain import (
     is_goodbye,
     is_nexus_question,
     strip_nexus_link,
-    IRRELEVANT_RESPONSE,
 )
 
 
@@ -111,38 +110,30 @@ if user_input:
         elif has_greeting_prefix(user_input):
             greeting_prefix = get_random_greeting() + "\n\n"
             with st.spinner("Thinking..."):
-                # [FIX 3] Retriever-based relevance check: run retrieval first.
-                # If no documents come back the question is off-topic → fixed reply.
-                docs = st.session_state.retriever.invoke(user_input)
-                if not docs:
-                    answer = IRRELEVANT_RESPONSE
+                # Chain runs directly — relevance is handled by the system prompt
+                # fallback rule, not a pre-flight retriever gate.
+                raw_answer = _run_chain_with_retry(st.session_state.chain, user_input)
+                if raw_answer is None:
+                    answer = "⚠️ Something went wrong after multiple retries. Please try again in a moment."
                 else:
-                    raw_answer = _run_chain_with_retry(st.session_state.chain, user_input)
-                    if raw_answer is None:
-                        answer = "⚠️ Something went wrong after multiple retries. Please try again in a moment."
-                    else:
-                        if not is_nexus_question(user_input):
-                            raw_answer = strip_nexus_link(raw_answer)
-                        answer = greeting_prefix + raw_answer
+                    if not is_nexus_question(user_input):
+                        raw_answer = strip_nexus_link(raw_answer)
+                    answer = greeting_prefix + raw_answer
 
             st.write(answer)
 
         # Case 4: Normal query
         else:
             with st.spinner("Thinking..."):
-                # [FIX 3] Retriever-based relevance check: run retrieval first.
-                # If no documents come back the question is off-topic → fixed reply.
-                docs = st.session_state.retriever.invoke(user_input)
-                if not docs:
-                    answer = IRRELEVANT_RESPONSE
+                # Chain runs directly — relevance is handled by the system prompt
+                # fallback rule, not a pre-flight retriever gate.
+                raw_answer = _run_chain_with_retry(st.session_state.chain, user_input)
+                if raw_answer is None:
+                    answer = "⚠️ Something went wrong after multiple retries. Please try again in a moment."
                 else:
-                    raw_answer = _run_chain_with_retry(st.session_state.chain, user_input)
-                    if raw_answer is None:
-                        answer = "⚠️ Something went wrong after multiple retries. Please try again in a moment."
-                    else:
-                        if not is_nexus_question(user_input):
-                            raw_answer = strip_nexus_link(raw_answer)
-                        answer = raw_answer
+                    if not is_nexus_question(user_input):
+                        raw_answer = strip_nexus_link(raw_answer)
+                    answer = raw_answer
 
             st.write(answer)
 
