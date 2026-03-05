@@ -215,6 +215,7 @@ def build_chain():
     embeddings = HuggingFaceEmbeddings(
         model_name="all-MiniLM-L6-v2",
         model_kwargs={"device": "cpu"}
+        encode_kwargs={"normalize_embeddings": True}
     )
 
     # Load ChromaDB from disk
@@ -228,8 +229,8 @@ def build_chain():
     retriever = vectorstore.as_retriever(
         search_type="mmr",
         search_kwargs={
-            "k": 6,
-            "fetch_k": 20
+            "k": 8,
+            "fetch_k": 40
         }
     )
 
@@ -237,7 +238,7 @@ def build_chain():
     llm = ChatGroq(
         model="llama-3.1-8b-instant",
         temperature=0,
-        max_tokens=600,
+        max_tokens=800,
         api_key = os.getenv("GROQ_API_KEY") or st.secrets.get("GROQ_API_KEY")
     )
 
@@ -270,3 +271,4 @@ def build_chain():
     # relevance check before invoking the full chain (Issue 3 fix).
 
     return chain, retriever
+
