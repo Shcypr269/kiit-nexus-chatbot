@@ -213,7 +213,8 @@ def build_chain():
     # Load embeddings — same model used during ingestion
     embeddings = HuggingFaceEmbeddings(
         model_name="all-MiniLM-L6-v2",
-        model_kwargs={"device": "cpu"}
+        model_kwargs={"device": "cpu"},
+        encode_kwargs={"normalize_embeddings": True}
     )
 
     # Load ChromaDB from disk
@@ -268,3 +269,4 @@ def build_chain():
     # Return both chain AND retriever so the UI layer can do a retriever-based
     # relevance check before invoking the full chain (Issue 3 fix).
     return chain, retriever
+
