@@ -1,7 +1,22 @@
 import time
 import streamlit as st
-from rag_chain import (build_chain,is_greeting,has_greeting_prefix,get_random_greeting,is_goodbye,is_nexus_question,strip_nexus_link,IRRELEVANT_RESPONSE)
+from rag_chain import (
+    build_chain,
+    is_greeting,
+    has_greeting_prefix,
+    get_random_greeting,
+    is_goodbye,
+    is_nexus_question,
+    strip_nexus_link,
+    IRRELEVANT_RESPONSE,
+)
 
+
+# ---------------------------------------------------------------------------
+# [FIX 4] Rate-limit retry helper — defined first so it can be called below.
+# Wraps the chain call. On a 429 / rate-limit error, shows a waiting message,
+# sleeps 20 seconds, and retries. Returns None if all retries are exhausted.
+# ---------------------------------------------------------------------------
 def _run_chain_with_retry(chain, question: str, max_retries: int = 2):
     """
     Run the RAG chain with automatic retry on Groq rate-limit errors.
@@ -136,5 +151,3 @@ if user_input:
         "role": "assistant",
         "content": answer,
     })
-
-
